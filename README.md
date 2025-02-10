@@ -30,7 +30,7 @@ car-rental-app/ │-- seller_app/ # Seller/Car Owner module │-- customer_app/ 
 
 ---
 
-## **🚀 Future Enhancement**s  
+## **🚀 Future Enhancements** 
 - ✅ Payment integration  
 - ✅ Real-time chat between car owners and customers  
 - ✅ Rating and review system  
@@ -38,33 +38,35 @@ car-rental-app/ │-- seller_app/ # Seller/Car Owner module │-- customer_app/ 
 
 ---
 
-## **🔄 How to Clone and Run the Project ** 
+## 🔄 How to Clone and Run the Project 
 
-### **1️⃣ Clone the Repository ** 
+### 1️⃣ Clone the Repository
 ```sh
 git clone https://github.com/yourusername/car-rental-app.git
-
-### **2️⃣ Navigate to the Project Folder**
+---
+### 2️⃣ Navigate to the Project Folder
 ```sh
 git checkout -b feature-branch
 
-### **3️⃣ Create a New Branch**
+### 3️⃣ Create a New Branch
 ```sh
 git checkout -b feature-branch
 
-### **4️⃣ Make Your Changes and Commit**
+### 4️⃣ Make Your Changes and Commit
 ```sh
 git add .
 git commit -m "Add new feature"
 
-### **5️⃣ Push Your Changes**
+### 5️⃣ Push Your Changes
 ```sh
 git push origin feature-branch
 
-### **6️⃣ Create a Pull Request**
+### 6️⃣ Create a Pull Request
 <\br>- Go to the original repository on GitHub.
 <\br>- Click on Pull Requests > New Pull Request.
 <\br>- Select your branch and submit the PR for review.
+
+---
 
 **🚀 Stay tuned for updates and happy coding! 🚀**
 
