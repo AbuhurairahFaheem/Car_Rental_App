@@ -2,7 +2,7 @@
 
 A **Flutter-based** car rental application that connects **car owners** with **customers** looking for rental vehicles. The project consists of two main modules:  
 
----
+-------
 
 ## **📌 Modules**  
 
@@ -25,7 +25,7 @@ A **Flutter-based** car rental application that connects **car owners** with **c
 
 ---
 
-## **📂 Project Structure ** 
+## 📂 **Project Structure** 
 car-rental-app/ │-- seller_app/ # Seller/Car Owner module │-- customer_app/ # Customer module │-- lib/ # Shared Flutter components │-- assets/ # Images, icons, and other assets │-- README.md # Project documentation │-- pubspec.yaml # Flutter dependencies │-- main.dart # Entry point of the application
 
 ---
@@ -45,7 +45,6 @@ car-rental-app/ │-- seller_app/ # Seller/Car Owner module │-- customer_app/ 
 git clone https://github.com/yourusername/car-rental-app.git
 ---
 ### 2️⃣ Navigate to the Project Folder
-```sh
 git checkout -b feature-branch
 
 ### 3️⃣ Create a New Branch
@@ -62,12 +61,12 @@ git commit -m "Add new feature"
 git push origin feature-branch
 
 ### 6️⃣ Create a Pull Request
-<\br>- Go to the original repository on GitHub.
-<\br>- Click on Pull Requests > New Pull Request.
-<\br>- Select your branch and submit the PR for review.
+- Go to the original repository on GitHub.
+- Click on Pull Requests > New Pull Request.
+- Select your branch and submit the PR for review.
 
 ---
 
-**🚀 Stay tuned for updates and happy coding! 🚀**
+🚀 Stay tuned for updates and happy coding! 🚀
 
 
