@@ -6,6 +6,8 @@ void main() {
 }
 
 class CarRentalApp extends StatelessWidget {
+  const CarRentalApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
