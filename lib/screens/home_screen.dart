@@ -105,8 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         children: [
-          //Placeholder(),
-          ExplorePage(), // 📌 Explore
+          Placeholder(),
+          //ExplorePage(), // 📌 Explore
           RentedPage(), // ✅ Rented Cars Page
           HomeContent(), // 🏠 Home Page Content
           WishlistPage(), // ✅ Wishlist Page
