@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart'; // Import the HomeScreen
+import 'screens/login_page.dart'; // Import LoginScreen
 
 void main() {
-  runApp(CarRentalApp());
+  runApp(const CarRentalApp());
 }
 
 class CarRentalApp extends StatelessWidget {
@@ -12,7 +12,7 @@ class CarRentalApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(), // Use HomeScreen here
+      home: const LoginScreen(), // Start from LoginScreen
     );
   }
 }

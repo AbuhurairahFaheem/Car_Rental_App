@@ -7,6 +7,7 @@ import 'rented_page.dart'; // ✅ Import Rented Page
 import 'wishlist_page.dart'; // ✅ Import Wishlist Page
 import 'profile_page.dart';
 import 'explore_page.dart';
+import 'category_cars_page.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -14,15 +15,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 2; // Default to Home Page
+  int _selectedIndex = 2; // ✅ Default to Home
   final PageController _pageController = PageController(initialPage: 2);
+
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      _pageController.jumpToPage(index);
+      _pageController.jumpToPage(index); // ✅ Ensure correct navigation
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -105,12 +108,11 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         children: [
-          Placeholder(),
-          //ExplorePage(), // 📌 Explore
-          RentedPage(), // ✅ Rented Cars Page
-          HomeContent(), // 🏠 Home Page Content
-          WishlistPage(), // ✅ Wishlist Page
-          ProfilePage(), // 📌 Profile
+          ExplorePage(),  // ✅ Index 0: Explore
+          RentedPage(),   // ✅ Index 1: Rented
+          HomeContent(),  // ✅ Index 2: Home
+          WishlistPage(), // ✅ Index 3: Wishlist
+          ProfilePage(),  // ✅ Index 4: Profile
         ],
       ),
 
@@ -208,16 +210,26 @@ class HomeContent extends StatelessWidget {
           SizedBox(height: 10),
           Wrap(
             spacing: 10,
-            children:
-                categories.map((category) {
-                  return Chip(
-                    label: Text(category, style: TextStyle(fontSize: 16)),
-                    backgroundColor: Colors.white,
-                    elevation: 2,
-                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            children: categories.map((category) {
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CategoryCarsPage(categoryName: category),
+                    ),
                   );
-                }).toList(),
+                },
+                child: Chip(
+                  label: Text(category, style: TextStyle(fontSize: 16)),
+                  backgroundColor: Colors.white,
+                  elevation: 2,
+                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                ),
+              );
+            }).toList(),
           ),
+
           SizedBox(height: 20),
           Text(
             "Recommendations",
