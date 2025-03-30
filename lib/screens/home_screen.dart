@@ -3,8 +3,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'searchpage.dart';
 import 'car_details_page.dart';
 import 'notification_page.dart';
-import 'rented_page.dart'; // ✅ Import Rented Page
-import 'wishlist_page.dart'; // ✅ Import Wishlist Page
+import 'rented_page.dart';
+import 'wishlist_page.dart';
 import 'profile_page.dart';
 import 'explore_page.dart';
 import 'category_cars_page.dart';
@@ -18,14 +18,12 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 2; // ✅ Default to Home
   final PageController _pageController = PageController(initialPage: 2);
 
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
       _pageController.jumpToPage(index); // ✅ Ensure correct navigation
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Container(
             height: 45,
             decoration: BoxDecoration(
+              //ye ha profile button
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(30),
             ),
@@ -94,7 +93,14 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           SizedBox(width: 10),
-          CircleAvatar(),
+          CircleAvatar(
+            radius: 20,
+            backgroundImage: AssetImage(
+              "assets/images/profile.jpeg",
+            ), // ✅ Default Image
+            backgroundColor: Colors.grey[200], // ✅ Fallback Color
+          ),
+
           SizedBox(width: 10),
         ],
       ),
@@ -108,11 +114,11 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         children: [
-          ExplorePage(),  // ✅ Index 0: Explore
-          RentedPage(),   // ✅ Index 1: Rented
-          HomeContent(),  // ✅ Index 2: Home
+          ExplorePage(), // ✅ Index 0: Explore
+          RentedPage(), // ✅ Index 1: Rented
+          HomeContent(), // ✅ Index 2: Home
           WishlistPage(), // ✅ Index 3: Wishlist
-          ProfilePage(),  // ✅ Index 4: Profile
+          ProfilePage(), // ✅ Index 4: Profile
         ],
       ),
 
@@ -143,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: "Profile",
-          ), // Placeholder
+          ), // Profile Page
         ],
       ),
     );
@@ -210,24 +216,30 @@ class HomeContent extends StatelessWidget {
           SizedBox(height: 10),
           Wrap(
             spacing: 10,
-            children: categories.map((category) {
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CategoryCarsPage(categoryName: category),
+            children:
+                categories.map((category) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) =>
+                                  CategoryCarsPage(categoryName: category),
+                        ),
+                      );
+                    },
+                    child: Chip(
+                      label: Text(category, style: TextStyle(fontSize: 16)),
+                      backgroundColor: Colors.white,
+                      elevation: 2,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 10,
+                      ),
                     ),
                   );
-                },
-                child: Chip(
-                  label: Text(category, style: TextStyle(fontSize: 16)),
-                  backgroundColor: Colors.white,
-                  elevation: 2,
-                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                ),
-              );
-            }).toList(),
+                }).toList(),
           ),
 
           SizedBox(height: 20),
