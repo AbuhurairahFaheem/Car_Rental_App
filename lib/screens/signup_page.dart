@@ -143,6 +143,9 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -155,13 +158,126 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _formData = SignUpFormData();
 
-  void _signUp() {
+  void _signUp() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account created successfully!')),
-      );
-      Navigator.pop(context);
+      try {
+        // Create user with email and password
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+          email: _formData.emailController.text.trim(),
+          password: _formData.passwordController.text.trim(),
+        );
+
+        // Get the UID of the created user
+        String uid = userCredential.user!.uid;
+
+        // Store additional user info in Realtime Database
+        DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+
+        await ref.set({
+          "fullName": _formData.nameController.text.trim(),
+          "contact": _formData.contactController.text.trim(),
+          "email": _formData.emailController.text.trim(),
+        });
+
+        // Now start phone number verification process
+        await _verifyPhoneNumber(uid); // Proceed to phone verification
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account created successfully!')),
+        );
+        Navigator.pop(context);
+      } on FirebaseAuthException catch (e) {
+        String message = 'Registration failed';
+        if (e.code == 'email-already-in-use') {
+          message = 'This email is already in use.';
+        } else if (e.code == 'weak-password') {
+          message = 'Password is too weak.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
     }
+  }
+
+  Future<void> _verifyPhoneNumber(String uid) async {
+    String phoneNumber = _formData.contactController.text.trim();
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        // If auto-verification happens, sign in the user directly
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        // Link the phone to the user account
+        await _linkPhoneToUser(uid, credential);
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        print('Phone verification failed: ${e.message}');
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        // Store the verification ID for later use
+        _showOTPDialog(verificationId, uid);
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        // Timeout, handle appropriately
+      },
+    );
+  }
+
+  void _showOTPDialog(String verificationId, String uid) {
+    final TextEditingController otpController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Enter OTP"),
+          content: TextField(
+            controller: otpController,
+            decoration: InputDecoration(hintText: "Enter OTP sent to your phone"),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                // Get OTP entered by the user
+                String smsCode = otpController.text.trim();
+
+                // Create PhoneAuthCredential with verificationId and smsCode
+                PhoneAuthCredential credential = PhoneAuthProvider.credential(
+                  verificationId: verificationId,
+                  smsCode: smsCode,
+                );
+
+                // Sign in with the credential
+                await FirebaseAuth.instance.signInWithCredential(credential);
+
+                // Link phone number to Firebase account
+                await _linkPhoneToUser(uid, credential);
+
+                Navigator.pop(context);
+              },
+              child: Text('Verify'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _linkPhoneToUser(String uid, PhoneAuthCredential credential) async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    // Link the phone credential to the existing user
+    await user!.linkWithCredential(credential);
+
+    // Now you can update the phone number in the database too
+    DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+    await ref.update({"phone": _formData.contactController.text.trim()});
   }
 
   @override
