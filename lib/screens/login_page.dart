@@ -103,6 +103,9 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'signup_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import '../models/user_models.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -115,19 +118,49 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final LoginFormData _formData = LoginFormData();
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
       final email = _formData.emailController.text.trim();
       final password = _formData.passwordController.text.trim();
 
-      if (email == 'user@example.com' && password == 'password123') {
+      try {
+        // Firebase Auth
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(email: email, password: password);
+
+        final uid = userCredential.user!.uid;
+
+        // Fetch user data from Realtime DB
+        final ref = FirebaseDatabase.instance.ref("users/$uid");
+        final snapshot = await ref.get();
+
+        if (!snapshot.exists) {
+          throw Exception("User data not found in database.");
+        }
+
+        final user = UserModel.fromMap(uid, snapshot.value as Map);
+
+        // ✅ Navigate to home with user data
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => HomeScreen()),
+          MaterialPageRoute(
+            builder: (_) => HomeScreen(user: user), // Pass user to home
+          ),
         );
-      } else {
+      } on FirebaseAuthException catch (e) {
+        String message = "Login failed";
+        if (e.code == 'user-not-found') {
+          message = "No user found for this email.";
+        } else if (e.code == 'wrong-password') {
+          message = "Incorrect password.";
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid email or password')),
+          SnackBar(content: Text(message)),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.toString()}")),
         );
       }
     }

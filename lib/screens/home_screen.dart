@@ -340,9 +340,15 @@ import 'wishlist_page.dart';
 import 'profile_page.dart';
 import 'explore_page.dart';
 import 'category_cars_page.dart';
+import '../models/user_models.dart';
+
 
 // Main Home Screen class
 class HomeScreen extends StatefulWidget {
+  final UserModel user;
+
+  const HomeScreen({super.key, required this.user});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -357,6 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _pageController.jumpToPage(index);
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
