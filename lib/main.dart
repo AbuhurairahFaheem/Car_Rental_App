@@ -18,13 +18,12 @@
 // }
 
 import 'package:flutter/material.dart';
-import 'screens/login_page.dart'; // Import LoginScreen
 import 'package:firebase_core/firebase_core.dart';
+import 'screens/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // initialize Firebase
-  //FirebaseAuth.instance.setSettings(appVerificationDisabledForTesting: true);
+  await Firebase.initializeApp();
   runApp(const CarRentalApp());
 }
 
@@ -35,10 +34,8 @@ class CarRentalApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const LoginScreen(), // Start from LoginScreen
-
+      home: const SplashScreen(), // Start from SplashScreen
       theme: ThemeData(
-        // You can define basic colors and other properties here without text styles
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),

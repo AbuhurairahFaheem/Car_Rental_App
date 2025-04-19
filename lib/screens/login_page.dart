@@ -108,6 +108,7 @@ import 'package:firebase_database/firebase_database.dart';
 import '../models/user_models.dart';
 import '../Utils/hash_password.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -152,6 +153,9 @@ class _LoginScreenState extends State<LoginScreen> {
           contact: data['contact'] ?? '',
           email: data['email'] ?? '',
         );
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_uid', uid); // or user.email
 
         // Navigate to home screen
         Navigator.pushReplacement(

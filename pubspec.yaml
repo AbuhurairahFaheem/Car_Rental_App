@@ -45,6 +45,7 @@ dev_dependencies:
   firebase_database: ^10.0.0   # If you're using Realtime Database
   cloud_firestore: ^4.15.5
   crypto: ^3.0.3
+  shared_preferences: ^2.2.2
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
