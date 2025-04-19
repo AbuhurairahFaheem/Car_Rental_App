@@ -148,6 +148,8 @@ import 'package:firebase_database/firebase_database.dart';
 import '../models/user_models.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -167,43 +169,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Step 1: Create Firebase Auth user
-        final authResult = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-        );
-        final uid = authResult.user!.uid;
+        // Check if email already exists
+        final existingUser = await FirebaseFirestore.instance
+            .collection("users")
+            .where("email", isEqualTo: emailController.text.trim())
+            .get();
 
-        // Step 2: Create UserModel object
+        if (existingUser.docs.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Email is already in use')),
+          );
+          return;
+        }
+
+        // Create user model
         final user = UserModel(
-          uid: uid,
+          uid: DateTime.now().millisecondsSinceEpoch.toString(), // generate a unique ID
           fullName: nameController.text.trim(),
           contact: contactController.text.trim(),
           email: emailController.text.trim(),
+          // password: hash(passwordController.text.trim()) // optionally hash this
         );
 
-        // Step 3: Save to Firebase Realtime DB
-        await FirebaseDatabase.instance.ref("users/$uid").set(user.toJson());
-
-        // Step 4: Start phone verification
-        await _verifyPhoneNumber(uid);
+        // Save to Firestore
+        await FirebaseFirestore.instance.collection("users").doc(user.uid).set({
+          'uid': user.uid,
+          'fullName': user.fullName,
+          'contact': user.contact,
+          'email': user.email,
+          'password': passwordController.text.trim(), // 👈 You should hash this
+          'role': 'customer',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account created!')),
         );
         Navigator.pop(context);
-      } on FirebaseAuthException catch (e) {
-        String message = 'Registration failed';
-        if (e.code == 'email-already-in-use') {
-          message = 'Email is already in use';
-        } else if (e.code == 'weak-password') {
-          message = 'Weak password';
-        }
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
       }
     }
   }
+
+
 
   Future<void> _verifyPhoneNumber(String uid) async {
     final phone = contactController.text.trim();

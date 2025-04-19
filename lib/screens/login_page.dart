@@ -106,6 +106,8 @@ import 'signup_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../models/user_models.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -124,47 +126,50 @@ class _LoginScreenState extends State<LoginScreen> {
       final password = _formData.passwordController.text.trim();
 
       try {
-        // Firebase Auth
-        UserCredential userCredential = await FirebaseAuth.instance
-            .signInWithEmailAndPassword(email: email, password: password);
+        // Query Firestore for user with matching email
+        final querySnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .where('email', isEqualTo: email)
+            .where('password', isEqualTo: password) // 👉 You should hash this
+            .get();
 
-        final uid = userCredential.user!.uid;
-
-        // Fetch user data from Realtime DB
-        final ref = FirebaseDatabase.instance.ref("users/$uid");
-        final snapshot = await ref.get();
-
-        if (!snapshot.exists) {
-          throw Exception("User data not found in database.");
+        if (querySnapshot.docs.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid email or password.')),
+          );
+          return;
         }
 
-        final user = UserModel.fromMap(uid, snapshot.value as Map);
+        // Retrieve user data
+        final doc = querySnapshot.docs.first;
+        final data = doc.data();
+        final uid = doc.id;
 
-        // ✅ Navigate to home with user data
+        final user = UserModel(
+          uid: uid,
+          fullName: data['fullName'] ?? '',
+          contact: data['contact'] ?? '',
+          email: data['email'] ?? '',
+        );
+
+        // Navigate to home screen
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => HomeScreen(user: user), // Pass user to home
-          ),
+          MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
         );
-      } on FirebaseAuthException catch (e) {
-        String message = "Login failed";
-        if (e.code == 'user-not-found') {
-          message = "No user found for this email.";
-        } else if (e.code == 'wrong-password') {
-          message = "Incorrect password.";
-        }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
       } catch (e) {
+        print('Login error: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
+          const SnackBar(content: Text('Login failed. Please try again later.')),
         );
       }
     }
   }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
