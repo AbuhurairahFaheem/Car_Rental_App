@@ -148,6 +148,7 @@ import 'package:firebase_database/firebase_database.dart';
 import '../models/user_models.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
+import '../utils/hash_password.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 
@@ -191,13 +192,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
           // password: hash(passwordController.text.trim()) // optionally hash this
         );
 
+
+
         // Save to Firestore
         await FirebaseFirestore.instance.collection("users").doc(user.uid).set({
           'uid': user.uid,
           'fullName': user.fullName,
           'contact': user.contact,
           'email': user.email,
-          'password': passwordController.text.trim(), // 👈 You should hash this
+          'password': hashPassword(passwordController.text.trim()), // 👈 You should hash this
           'role': 'customer',
           'createdAt': FieldValue.serverTimestamp(),
         });
