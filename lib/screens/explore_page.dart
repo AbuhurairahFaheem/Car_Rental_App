@@ -56,44 +56,48 @@
 
 import 'package:flutter/material.dart';
 import 'category_cars_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ExplorePage extends StatelessWidget {
-  final List<CategoryItem> categories = [
-    CategoryItem(name: 'SUV', icon: Icons.directions_car, color: Colors.blue),
-    CategoryItem(
-      name: 'Sedan',
-      icon: Icons.directions_car_filled,
-      color: Colors.green,
-    ),
-    CategoryItem(name: 'Luxury', icon: Icons.star, color: Colors.purple),
-    CategoryItem(
-      name: 'Electric',
-      icon: Icons.electric_car,
-      color: Colors.orange,
-    ),
-  ];
+  const ExplorePage({super.key});
 
-  ExplorePage({super.key});
+  Future<List<CategoryItem>> fetchCategories() async {
+    final snapshot = await FirebaseFirestore.instance.collection('categories').get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return CategoryItem(
+        name: data['name'],
+        icon: getIconFromString(data['icon']),
+        color: Color(data['color']),
+      );
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildAppBar(), body: _buildGrid(context));
+    return Scaffold(
+      appBar: AppBar(title: const Text("Explore Cars")),
+      body: FutureBuilder<List<CategoryItem>>(
+        future: fetchCategories(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting)
+            return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData || snapshot.data!.isEmpty)
+            return const Center(child: Text("No categories found"));
+          final categories = snapshot.data!;
+          return _buildGrid(context, categories);
+        },
+      ),
+    );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(title: const Text("Explore Cars"));
-  }
-
-  Widget _buildGrid(BuildContext context) {
+  Widget _buildGrid(BuildContext context, List<CategoryItem> categories) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: GridView.builder(
         itemCount: categories.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 1.2,
+          crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 1.2,
         ),
         itemBuilder: (context, index) {
           return CategoryCard(
@@ -102,10 +106,7 @@ class ExplorePage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder:
-                      (_) => CategoryCarsPage(
-                        categoryName: categories[index].name,
-                      ),
+                  builder: (_) => CategoryCarsPage(categoryName: categories[index].name),
                 ),
               );
             },
@@ -154,5 +155,15 @@ class CategoryCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+IconData getIconFromString(String iconName) {
+  switch (iconName) {
+    case 'directions_car': return Icons.directions_car;
+    case 'star': return Icons.star;
+    case 'electric_car': return Icons.electric_car;
+    case 'directions_car_filled': return Icons.directions_car_filled;
+    default: return Icons.directions_car;
   }
 }

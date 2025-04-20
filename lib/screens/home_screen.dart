@@ -332,6 +332,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'searchpage.dart';
 import 'car_details_page.dart';
 import 'notification_page.dart';
@@ -342,8 +344,6 @@ import 'explore_page.dart';
 import 'category_cars_page.dart';
 import '../models/user_models.dart';
 
-
-// Main Home Screen class
 class HomeScreen extends StatefulWidget {
   final UserModel user;
 
@@ -363,7 +363,6 @@ class _HomeScreenState extends State<HomeScreen> {
       _pageController.jumpToPage(index);
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -396,14 +395,11 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
           BottomNavigationBarItem(icon: Icon(Icons.check_box), label: "Rented"),
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: "Wishlist",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Wishlist"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
@@ -411,16 +407,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Search Button Widget
 class SearchButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => SearchPage()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => SearchPage()));
       },
       child: Container(
         height: 45,
@@ -430,13 +422,10 @@ class SearchButton extends StatelessWidget {
         ),
         padding: EdgeInsets.symmetric(horizontal: 15),
         child: Row(
-          children: [
+          children: const [
             Icon(Icons.search, color: Colors.black54),
             SizedBox(width: 10),
-            Text(
-              "Search cars...",
-              style: TextStyle(color: Colors.black54, fontSize: 16),
-            ),
+            Text("Search cars...", style: TextStyle(color: Colors.black54, fontSize: 16)),
           ],
         ),
       ),
@@ -444,46 +433,34 @@ class SearchButton extends StatelessWidget {
   }
 }
 
-// Notification Icon Widget
 class NotificationIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
       icon: Stack(
         children: [
-          Icon(Icons.notifications, color: Colors.black54, size: 28),
+          const Icon(Icons.notifications, color: Colors.black54, size: 28),
           Positioned(
             right: 0,
             top: 0,
             child: Container(
               padding: EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-              child: Text(
+              decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+              child: const Text(
                 '3',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ),
         ],
       ),
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => NotificationsPage()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsPage()));
       },
     );
   }
 }
 
-// Profile Avatar Widget
 class ProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -495,7 +472,6 @@ class ProfileAvatar extends StatelessWidget {
   }
 }
 
-// Home Content Widget
 class HomeContent extends StatelessWidget {
   final List<Map<String, String>> carRecommendations = [
     {
@@ -518,8 +494,6 @@ class HomeContent extends StatelessWidget {
     },
   ];
 
-  final List<String> categories = ["SUV", "Sedan", "Luxury", "Electric"];
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -530,126 +504,174 @@ class HomeContent extends StatelessWidget {
           SectionTitle(title: "Spotlight"),
           CarouselSliderWidget(carRecommendations: carRecommendations),
           SectionTitle(title: "Categories"),
-          CategoriesWrap(categories: categories),
+          CategoriesWrap(),
           SectionTitle(title: "Recommendations"),
-          RecommendationsList(carRecommendations: carRecommendations),
+          RecommendationsList(), // This works now!
         ],
       ),
     );
   }
 }
 
-// Section Title Widget
 class SectionTitle extends StatelessWidget {
   final String title;
-  SectionTitle({required this.title});
+
+  const SectionTitle({required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Text(title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
     );
   }
 }
 
-// Carousel Slider Widget
 class CarouselSliderWidget extends StatelessWidget {
   final List<Map<String, String>> carRecommendations;
-  CarouselSliderWidget({required this.carRecommendations});
+
+  const CarouselSliderWidget({required this.carRecommendations});
 
   @override
   Widget build(BuildContext context) {
     return CarouselSlider(
       options: CarouselOptions(autoPlay: true, enlargeCenterPage: true),
-      items:
-          carRecommendations.map((car) {
-            return Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                image: DecorationImage(
-                  image: AssetImage(car['image']!),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            );
-          }).toList(),
+      items: carRecommendations.map((car) {
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: 5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            image: DecorationImage(
+              image: AssetImage(car['image'] ?? 'assets/images/default_car.jpg'),
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
 
-// Categories Wrap Widget
 class CategoriesWrap extends StatelessWidget {
-  final List<String> categories;
-  CategoriesWrap({required this.categories});
+  Future<List<String>> fetchCategories() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('categories').get();
+      return snapshot.docs.map((doc) => doc['name'] as String).toList();
+    } catch (e) {
+      print("Error fetching categories: $e");
+      return [];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      children:
-          categories.map((category) {
+    return FutureBuilder<List<String>>(
+      future: fetchCategories(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text("No categories found"));
+        }
+
+        final categories = snapshot.data!;
+
+        return Wrap(
+          spacing: 10,
+          children: categories.map((category) {
             return GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => CategoryCarsPage(categoryName: category),
-                  ),
+                  MaterialPageRoute(builder: (context) => CategoryCarsPage(categoryName: category)),
                 );
               },
-              child: Chip(
-                label: Text(category, style: TextStyle(fontSize: 16)),
-                backgroundColor: Colors.white,
+              child: Material(
                 elevation: 2,
-                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                borderRadius: BorderRadius.circular(30),
+                child: Chip(
+                  label: Text(category, style: TextStyle(fontSize: 16)),
+                  backgroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                ),
               ),
             );
           }).toList(),
-    );
-  }
-}
-
-// Recommendations List Widget
-class RecommendationsList extends StatelessWidget {
-  final List<Map<String, String>> carRecommendations;
-  RecommendationsList({required this.carRecommendations});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: carRecommendations.length,
-      itemBuilder: (context, index) {
-        final car = carRecommendations[index];
-        return InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) => CarDetailsPage(
-                      carImage: car['image']!,
-                      carName: car['name']!,
-                      carType: car['type']!,
-                      carRate: car['rate']!,
-                    ),
-              ),
-            );
-          },
-          child: CarRecommendationCard(car: car),
         );
       },
     );
   }
 }
 
-// Car Recommendation Card Widget
+class RecommendationsList extends StatelessWidget {
+  Future<List<Map<String, dynamic>>> fetchCarRecommendations() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('cars')
+          .where('recommendation', isEqualTo: true)
+          .get();
+
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      print("Error fetching car recommendations: $e");
+      return [];
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: fetchCarRecommendations(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text("No recommendations available"));
+        }
+
+        final carRecommendations = snapshot.data!;
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: carRecommendations.length,
+          itemBuilder: (context, index) {
+            final car = carRecommendations[index];
+            return InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CarDetailsPage(car: car), // ✅ assumes CarDetailsPage takes a 'car' map
+                  ),
+                );
+              },
+              child: CarRecommendationCard(
+                car: {
+                  'image': car['image'] ?? '',
+                  'name': car['name'] ?? '',
+                  'type': car['type'] ?? '',
+                  'rate': car['rate'] ?? '',
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+
+
 class CarRecommendationCard extends StatelessWidget {
-  final Map<String, String> car;
-  CarRecommendationCard({required this.car});
+  final Map<String, dynamic> car;
+
+  const CarRecommendationCard({required this.car});
 
   @override
   Widget build(BuildContext context) {
@@ -662,11 +684,13 @@ class CarRecommendationCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
-                car['image']!,
+              child: Image.network(
+                car['image'] ?? '',
                 width: 120,
                 height: 80,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.broken_image, size: 80),
               ),
             ),
             SizedBox(width: 15),
@@ -674,17 +698,17 @@ class CarRecommendationCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  car['name']!,
+                  car['name'] ?? '',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 5),
                 Text(
-                  car['type']!,
+                  car['type'] ?? '',
                   style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                 ),
                 SizedBox(height: 5),
                 Text(
-                  car['rate']!,
+                  car['rate'] ?? '',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
