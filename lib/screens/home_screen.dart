@@ -652,10 +652,10 @@ class RecommendationsList extends StatelessWidget {
               },
               child: CarRecommendationCard(
                 car: {
-                  'image': car['image'] ?? '',
-                  'name': car['name'] ?? '',
+                  'image': car['imageURL'] ?? '',
+                  'name': car['title'] ?? '',
                   'type': car['type'] ?? '',
-                  'rate': car['rate'] ?? '',
+                  'rate': car['ratePerDay'] ?? '',
                 },
               ),
             );
@@ -685,7 +685,7 @@ class CarRecommendationCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Image.network(
-                car['image'] ?? '',
+                car['imageURL'] ?? '',
                 width: 120,
                 height: 80,
                 fit: BoxFit.cover,
@@ -698,7 +698,7 @@ class CarRecommendationCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  car['name'] ?? '',
+                  car['title'] ?? '',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 5),
@@ -708,7 +708,7 @@ class CarRecommendationCard extends StatelessWidget {
                 ),
                 SizedBox(height: 5),
                 Text(
-                  car['rate'] ?? '',
+                  car['ratePerDay'] ?? '',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

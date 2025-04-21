@@ -163,9 +163,9 @@ class CarListItem extends StatelessWidget {
       elevation: 5,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: ListTile(
-        leading: car['image'] != null
+        leading: car['imageURL'] != null
             ? Image.network(
-          car['image'],
+          car['imageURL'],
           width: 40,
           height: 40,
           fit: BoxFit.cover,
@@ -176,7 +176,7 @@ class CarListItem extends StatelessWidget {
           size: 40,
         ),
         title: Text(
-          car['name'] ?? "Car Name",
+          car['title'] ?? "Car Name",
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(car['type'] ?? "Car Type"),

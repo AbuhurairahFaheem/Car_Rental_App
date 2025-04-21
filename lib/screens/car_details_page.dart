@@ -86,8 +86,7 @@
 //   }
 // }
 
-import 'package:flutter/material.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class CarDetailsPage extends StatelessWidget {
@@ -95,14 +94,28 @@ class CarDetailsPage extends StatelessWidget {
 
   const CarDetailsPage({required this.car, super.key});
 
+  Future<String> getCategoryName(String categoryId) async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection('categories').doc(categoryId).get();
+      if (doc.exists) {
+        return doc.data()?['name'] ?? 'Unknown';
+      } else {
+        return 'Unknown';
+      }
+    } catch (e) {
+      print("Error fetching category name: $e");
+      return 'Unknown';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final String name = car['name'] ?? 'No name';
-    final String image = car['image'] ?? '';
-    final String type = car['category'] ?? 'Unknown';
-    final String rate = car['rate']?.toString() ?? '0';
+    final String name = car['title'] ?? 'No name';
+    final String image = car['imageURL'] ?? '';
+    final String categoryId = car['category'] ?? '';
+    final String rate = car['pricePerDay']?.toString() ?? '0';
     final bool available = car['available'] ?? true;
-    final String createdBy = car['created_by'] ?? 'N/A';
+    final String createdBy = car['createdBy'] ?? 'N/A';
     final String createdAt = car['created_at'] ?? 'N/A';
 
     return Scaffold(
@@ -115,18 +128,24 @@ class CarDetailsPage extends StatelessWidget {
             CarImage(imagePath: image),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: CarDetailsInfo(
-                name: name,
-                type: type,
-                rate: rate,
-                available: available,
-                createdBy: createdBy,
-                createdAt: createdAt,
-                onRentPressed: () {
-                  // Implement Rent functionality
-                },
-                onWishlistPressed: () {
-                  // Implement Wishlist functionality
+              child: FutureBuilder<String>(
+                future: getCategoryName(categoryId),
+                builder: (context, snapshot) {
+                  final categoryName = snapshot.data ?? 'Loading...';
+                  return CarDetailsInfo(
+                    name: name,
+                    type: categoryName,
+                    rate: rate,
+                    available: available,
+                    createdBy: createdBy,
+                    createdAt: createdAt,
+                    onRentPressed: () {
+                      // Implement Rent functionality
+                    },
+                    onWishlistPressed: () {
+                      // Implement Wishlist functionality
+                    },
+                  );
                 },
               ),
             ),
@@ -136,6 +155,7 @@ class CarDetailsPage extends StatelessWidget {
     );
   }
 }
+
 
 class CarImage extends StatelessWidget {
   final String imagePath;

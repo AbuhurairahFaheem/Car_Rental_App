@@ -94,12 +94,12 @@ class CarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String name = car['name'] ?? 'Unknown';
-    final String image = car['image'] ?? '';
-    final String rate = car['rate']?.toString() ?? '0';
+    final String name = car['title'] ?? 'Unknown';
+    final String image = car['imageURL'] ?? '';
+    final String rate = car['ratePerHour']?.toString() ?? '0';
     final String category = car['category'] ?? 'N/A';
     final bool available = car['available'] ?? true;
-    final String createdBy = car['created_by'] ?? 'Admin';
+    final String createdBy = car['createdBy'] ?? 'Admin';
     final String createdAt = car['created_at'] ?? 'Unknown';
 
     return Card(
