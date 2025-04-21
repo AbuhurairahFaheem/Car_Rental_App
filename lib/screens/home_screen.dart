@@ -333,8 +333,10 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'searchpage.dart';
+import 'login_page.dart';
 import 'car_details_page.dart';
 import 'notification_page.dart';
 import 'rented_page.dart';
@@ -447,7 +449,7 @@ class NotificationIcon extends StatelessWidget {
               padding: EdgeInsets.all(4),
               decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
               child: const Text(
-                '3',
+                '',
                 style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
@@ -462,13 +464,75 @@ class NotificationIcon extends StatelessWidget {
 }
 
 class ProfileAvatar extends StatelessWidget {
+  const ProfileAvatar({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: 20,
-      backgroundImage: AssetImage("assets/images/profile.jpeg"),
-      backgroundColor: Colors.grey[200],
+    return PopupMenuButton<String>(
+      icon: CircleAvatar(
+        radius: 20,
+        backgroundImage: AssetImage("assets/images/profile.jpeg"),
+        backgroundColor: Colors.grey[200],
+      ),
+      onSelected: (value) async {
+        if (value == 'profile') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => ProfilePage()),
+          );
+        } else if (value == 'logout') {
+          final shouldLogout = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Confirm Logout'),
+              content: const Text('Are you sure you want to log out?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Logout'),
+                ),
+              ],
+            ),
+          );
+
+          if (shouldLogout == true) {
+            await _logout(context);
+          }
+        }
+      },
+      itemBuilder: (BuildContext context) => [
+        const PopupMenuItem(
+          value: 'profile',
+          child: Text('See Profile Info'),
+        ),
+        const PopupMenuItem(
+          value: 'logout',
+          child: Text('Log Out'),
+        ),
+      ],
     );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('user_uid'); // remove saved login
+
+      // Navigate to login screen, clearing navigation stack
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+      );
+    } catch (e) {
+      print('Logout Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Logout failed. Please try again.')),
+      );
+    }
   }
 }
 

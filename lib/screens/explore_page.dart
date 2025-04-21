@@ -55,22 +55,38 @@
 // }
 
 import 'package:flutter/material.dart';
-import 'category_cars_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart'; // Just in case we need platform logs
+import 'category_cars_page.dart'; // Make sure this is your destination page
 
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key});
 
   Future<List<CategoryItem>> fetchCategories() async {
-    final snapshot = await FirebaseFirestore.instance.collection('categories').get();
-    return snapshot.docs.map((doc) {
-      final data = doc.data();
-      return CategoryItem(
-        name: data['name'],
-        icon: getIconFromString(data['icon']),
-        color: Color(data['color']),
-      );
-    }).toList();
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('categories').get();
+
+      if (snapshot.docs.isEmpty) {
+        debugPrint("⚠️ No categories found in Firestore.");
+        return [];
+      }
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+
+        // Logging for debugging
+        debugPrint("✅ Category data: $data");
+
+        return CategoryItem(
+          name: data['name'] ?? 'Unknown',
+          icon: getIconFromString(data['icon'] ?? 'directions_car'),
+          color: Color(data['color'] ?? 0xFF9E9E9E), // grey fallback
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint("❌ Error fetching categories: $e");
+      return [];
+    }
   }
 
   @override
@@ -80,10 +96,18 @@ class ExplorePage extends StatelessWidget {
       body: FutureBuilder<List<CategoryItem>>(
         future: fetchCategories(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          if (!snapshot.hasData || snapshot.data!.isEmpty)
-            return const Center(child: Text("No categories found"));
+          }
+
+          if (snapshot.hasError) {
+            return const Center(child: Text("An error occurred while fetching categories."));
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("No categories found."));
+          }
+
           final categories = snapshot.data!;
           return _buildGrid(context, categories);
         },
@@ -97,7 +121,10 @@ class ExplorePage extends StatelessWidget {
       child: GridView.builder(
         itemCount: categories.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 1.2,
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1.2,
         ),
         itemBuilder: (context, index) {
           return CategoryCard(
@@ -160,10 +187,16 @@ class CategoryCard extends StatelessWidget {
 
 IconData getIconFromString(String iconName) {
   switch (iconName) {
-    case 'directions_car': return Icons.directions_car;
-    case 'star': return Icons.star;
-    case 'electric_car': return Icons.electric_car;
-    case 'directions_car_filled': return Icons.directions_car_filled;
-    default: return Icons.directions_car;
+    case 'directions_car':
+      return Icons.directions_car;
+    case 'star':
+      return Icons.star;
+    case 'electric_car':
+      return Icons.electric_car;
+    case 'directions_car_filled':
+      return Icons.directions_car_filled;
+    default:
+      return Icons.directions_car;
   }
 }
+

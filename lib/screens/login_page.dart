@@ -103,8 +103,6 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'signup_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import '../models/user_models.dart';
 import '../Utils/hash_password.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

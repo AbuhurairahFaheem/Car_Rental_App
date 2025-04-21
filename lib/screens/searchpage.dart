@@ -70,7 +70,7 @@ class SearchPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Search Cars"),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.grey[200],
       ),
       body: const Padding(
         padding: EdgeInsets.all(8.0),
