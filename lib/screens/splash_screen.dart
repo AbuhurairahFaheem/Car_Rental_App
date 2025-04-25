@@ -25,7 +25,11 @@ class _SplashScreenState extends State<SplashScreen> {
     final savedUid = prefs.getString('user_uid');
 
     if (savedUid != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(savedUid).get();
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(savedUid)
+              .get();
 
       if (doc.exists) {
         final data = doc.data()!;
@@ -34,7 +38,9 @@ class _SplashScreenState extends State<SplashScreen> {
           fullName: data['fullName'] ?? '',
           contact: data['contact'] ?? '',
           email: data['email'] ?? '',
+          password: data['password'] ?? '', // Add password here too
         );
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
