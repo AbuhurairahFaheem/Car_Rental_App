@@ -108,7 +108,6 @@ import '../Utils/hash_password.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -127,11 +126,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       try {
         // Query Firestore for user with matching email
-        final querySnapshot = await FirebaseFirestore.instance
-            .collection('users')
-            .where('email', isEqualTo: email)
-            .where('password', isEqualTo: hashPassword(password)) // 👉 You should hash this
-            .get();
+        final querySnapshot =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .where('email', isEqualTo: email)
+                .where(
+                  'password',
+                  isEqualTo: hashPassword(password),
+                ) // 👉 You should hash this
+                .get();
 
         if (querySnapshot.docs.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -150,6 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
           fullName: data['fullName'] ?? '',
           contact: data['contact'] ?? '',
           email: data['email'] ?? '',
+          password: data['password'] ?? '', // Ensure password is passed
         );
 
         final prefs = await SharedPreferences.getInstance();
@@ -160,19 +164,16 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
         );
-
       } catch (e) {
         print('Login error: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login failed. Please try again later.')),
+          const SnackBar(
+            content: Text('Login failed. Please try again later.'),
+          ),
         );
       }
     }
   }
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
