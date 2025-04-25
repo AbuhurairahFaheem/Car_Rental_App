@@ -142,15 +142,13 @@
 //   }
 // }
 
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
-import '../models/user_models.dart';
-import '../widgets/custom_text_field.dart';
-import '../utils/validators.dart';
-import '../utils/hash_password.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// lib/screens/signup_page.dart
 
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/user_models.dart';
+import '../utils/hash_password.dart';
+import '../utils/validators.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -161,111 +159,73 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
-  final nameController = TextEditingController();
-  final contactController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _contactController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPassController = TextEditingController();
+
+  bool _isLoading = false;
 
   Future<void> _signUp() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        // Check if email already exists
-        final existingUser = await FirebaseFirestore.instance
-            .collection("users")
-            .where("email", isEqualTo: emailController.text.trim())
-            .get();
+    if (!_formKey.currentState!.validate()) return;
 
-        if (existingUser.docs.isNotEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Email is already in use')),
-          );
-          return;
-        }
+    setState(() => _isLoading = true);
 
-        // Create user model
-        final user = UserModel(
-          uid: DateTime.now().millisecondsSinceEpoch.toString(), // generate a unique ID
-          fullName: nameController.text.trim(),
-          contact: contactController.text.trim(),
-          email: emailController.text.trim(),
-          // password: hash(passwordController.text.trim()) // optionally hash this
-        );
+    try {
+      final email = _emailController.text.trim();
+      final pass = _passwordController.text.trim();
 
-
-
-        // Save to Firestore
-        await FirebaseFirestore.instance.collection("users").doc(user.uid).set({
-          'uid': user.uid,
-          'fullName': user.fullName,
-          'contact': user.contact,
-          'email': user.email,
-          'password': hashPassword(passwordController.text.trim()), // 👈 You should hash this
-          'role': 'customer',
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-
+      // 1️⃣ Check if email already exists
+      final existing =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .where('email', isEqualTo: email)
+              .get();
+      if (existing.docs.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created!')),
+          const SnackBar(content: Text('Email is already in use')),
         );
-        Navigator.pop(context);
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        setState(() => _isLoading = false);
+        return;
       }
+
+      // 2️⃣ Generate a Firestore auto‐ID
+      final docRef = FirebaseFirestore.instance.collection('users').doc();
+      final uid = docRef.id;
+
+      // 3️⃣ Create your UserModel (now includes password)
+      final user = UserModel(
+        uid: uid,
+        fullName: _nameController.text.trim(),
+        contact: _contactController.text.trim(),
+        email: email,
+        password: hashPassword(pass),
+      );
+
+      // 4️⃣ Write to Firestore
+      await docRef.set({
+        'uid': user.uid,
+        'fullName': user.fullName,
+        'contact': user.contact,
+        'email': user.email,
+        'password': user.password, // hashed
+        'role': 'customer',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Account created!')));
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Signup failed: $e')));
+    } finally {
+      setState(() => _isLoading = false);
     }
-  }
-
-
-
-  Future<void> _verifyPhoneNumber(String uid) async {
-    final phone = contactController.text.trim();
-
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: phone,
-      verificationCompleted: (credential) async {
-        await FirebaseAuth.instance.signInWithCredential(credential);
-        await _linkPhone(uid, credential);
-      },
-      verificationFailed: (e) => print('Phone verify error: ${e.message}'),
-      codeSent: (verificationId, _) => _showOtpDialog(verificationId, uid),
-      codeAutoRetrievalTimeout: (_) {},
-    );
-  }
-
-  void _showOtpDialog(String verificationId, String uid) {
-    final otpController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Enter OTP"),
-        content: TextField(controller: otpController),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              final smsCode = otpController.text.trim();
-              final credential = PhoneAuthProvider.credential(
-                verificationId: verificationId,
-                smsCode: smsCode,
-              );
-              await FirebaseAuth.instance.signInWithCredential(credential);
-              await _linkPhone(uid, credential);
-              Navigator.pop(context);
-            },
-            child: const Text("Verify"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _linkPhone(String uid, PhoneAuthCredential credential) async {
-    await FirebaseAuth.instance.currentUser?.linkWithCredential(credential);
-    await FirebaseDatabase.instance
-        .ref("users/$uid")
-        .update({'phone': contactController.text.trim()});
   }
 
   @override
@@ -274,30 +234,81 @@ class _SignUpScreenState extends State<SignUpScreen> {
       appBar: AppBar(title: const Text('Sign Up')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              CustomTextField(label: 'Full Name', controller: nameController, validator: Validators.validateName),
-              const SizedBox(height: 12),
-              CustomTextField(label: 'Contact No.', controller: contactController, keyboardType: TextInputType.phone, validator: Validators.validateContact),
-              const SizedBox(height: 12),
-              CustomTextField(label: 'Email', controller: emailController, keyboardType: TextInputType.emailAddress, validator: Validators.validateEmail),
-              const SizedBox(height: 12),
-              CustomTextField(label: 'Password', controller: passwordController, obscureText: true, validator: Validators.validatePassword),
-              const SizedBox(height: 12),
-              CustomTextField(
-                label: 'Confirm Password',
-                controller: confirmPasswordController,
-                obscureText: true,
-                validator: (value) => Validators.validateConfirmPassword(value, passwordController.text),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(onPressed: _signUp, child: const Text('Sign Up')),
-            ],
-          ),
-        ),
+        child:
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Form(
+                  key: _formKey,
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      // Full Name
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Full Name',
+                        ),
+                        validator: Validators.validateName,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Contact No.
+                      TextFormField(
+                        controller: _contactController,
+                        decoration: const InputDecoration(
+                          labelText: 'Contact No.',
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator: Validators.validateContact,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Email
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(labelText: 'Email'),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: Validators.validateEmail,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Password
+                      TextFormField(
+                        controller: _passwordController,
+                        decoration: const InputDecoration(
+                          labelText: 'Password',
+                        ),
+                        obscureText: true,
+                        validator: Validators.validatePassword,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Confirm Password
+                      TextFormField(
+                        controller: _confirmPassController,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirm Password',
+                        ),
+                        obscureText: true,
+                        validator:
+                            (val) => Validators.validateConfirmPassword(
+                              val,
+                              _passwordController.text,
+                            ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Sign Up Button
+                      ElevatedButton(
+                        onPressed: _signUp,
+                        child: const Text('Sign Up'),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(50),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
       ),
     );
   }
