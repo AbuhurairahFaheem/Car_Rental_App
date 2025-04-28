@@ -617,19 +617,29 @@ class CarouselSliderWidget extends StatelessWidget {
 }
 
 class CategoriesWrap extends StatelessWidget {
-  Future<List<String>> fetchCategories() async {
+  const CategoriesWrap({super.key});
+
+  // Model class to hold both name and id
+  Future<List<Map<String, String>>> fetchCategories() async {
     try {
       final snapshot = await FirebaseFirestore.instance.collection('categories').get();
-      return snapshot.docs.map((doc) => doc['name'] as String).toList();
+
+      return snapshot.docs.map((doc) {
+        final name = doc['name'] as String? ?? doc.id; // fallback if name missing
+        return {
+          'id': doc.id,
+          'name': name,
+        };
+      }).toList();
     } catch (e) {
-      print("Error fetching categories: $e");
+      print("❌ Error fetching categories: $e");
       return [];
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<String>>(
+    return FutureBuilder<List<Map<String, String>>>(
       future: fetchCategories(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -645,20 +655,23 @@ class CategoriesWrap extends StatelessWidget {
         return Wrap(
           spacing: 10,
           children: categories.map((category) {
+            final categoryId = category['id']!;
+            final categoryName = category['name']!;
+
             return GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CategoryCarsPage(categoryName: category)),
+                  MaterialPageRoute(builder: (context) => CategoryCarsPage(categoryId: categoryId)),
                 );
               },
               child: Material(
                 elevation: 2,
                 borderRadius: BorderRadius.circular(30),
                 child: Chip(
-                  label: Text(category, style: TextStyle(fontSize: 16)),
+                  label: Text(categoryName, style: const TextStyle(fontSize: 16)),
                   backgroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 ),
               ),
             );
@@ -668,6 +681,8 @@ class CategoriesWrap extends StatelessWidget {
     );
   }
 }
+
+
 
 class RecommendationsList extends StatelessWidget {
   Future<List<Map<String, dynamic>>> fetchCarRecommendations() async {

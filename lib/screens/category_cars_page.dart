@@ -48,41 +48,64 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CategoryCarsPage extends StatelessWidget {
-  final String categoryName;
+  final String categoryId;
 
-  CategoryCarsPage({required this.categoryName});
+  CategoryCarsPage({required this.categoryId});
 
-  Future<List<Map<String, dynamic>>> fetchCars() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('cars')
-        .where('category', isEqualTo: categoryName)
+  Future<Map<String, dynamic>> fetchCategoryAndCars() async {
+    final categorySnapshot = await FirebaseFirestore.instance
+        .collection('categories')
+        .doc(categoryId)
         .get();
 
-    return snapshot.docs.map((doc) => doc.data()).toList();
+    final categoryData = categorySnapshot.data();
+    final categoryName = categoryData?['name'] ?? 'Category';
+
+    final carsSnapshot = await FirebaseFirestore.instance
+        .collection('cars')
+        .where('category', isEqualTo: categoryId)
+        .get();
+
+    final cars = carsSnapshot.docs.map((doc) => doc.data()).toList();
+
+    return {
+      'name': categoryName,
+      'cars': cars,
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("$categoryName Cars")),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: fetchCars(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
-            return const Center(child: CircularProgressIndicator());
-          if (!snapshot.hasData || snapshot.data!.isEmpty)
-            return const Center(child: Text("No cars in this category"));
+    return FutureBuilder<Map<String, dynamic>>(
+      future: fetchCategoryAndCars(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-          final cars = snapshot.data!;
-          return ListView.builder(
+        if (!snapshot.hasData || snapshot.data!['cars'].isEmpty) {
+          return Scaffold(
+            appBar: AppBar(title: Text(snapshot.data?['name'] ?? "Cars")),
+            body: const Center(child: Text("No cars in this category")),
+          );
+        }
+
+        final categoryName = snapshot.data!['name'];
+        final cars = snapshot.data!['cars'];
+
+        return Scaffold(
+          appBar: AppBar(title: Text("$categoryName Cars")),
+          body: ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: cars.length,
             itemBuilder: (context, index) {
               return CarCard(car: cars[index]);
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -92,12 +115,24 @@ class CarCard extends StatelessWidget {
 
   const CarCard({required this.car, super.key});
 
+  Future<String> fetchCategoryName(String categoryId) async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection('categories').doc(categoryId).get();
+      if (doc.exists) {
+        return doc['name'] ?? 'Unknown';
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching category name: $e");
+    }
+    return 'Unknown';
+  }
+
   @override
   Widget build(BuildContext context) {
     final String name = car['title'] ?? 'Unknown';
     final String image = car['imageURL'] ?? '';
     final String rate = car['ratePerHour']?.toString() ?? '0';
-    final String category = car['category'] ?? 'N/A';
+    final String categoryId = car['category'] ?? '';
     final bool available = car['available'] ?? true;
     final String createdBy = car['createdBy'] ?? 'Admin';
     final String createdAt = car['created_at'] ?? 'Unknown';
@@ -123,6 +158,7 @@ class CarCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
+
             // Car Details
             Expanded(
               child: Column(
@@ -132,8 +168,20 @@ class CarCard extends StatelessWidget {
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text("Category: $category",
-                      style: const TextStyle(fontSize: 14)),
+
+                  /// 🟡 Load category name from Firestore
+                  FutureBuilder<String>(
+                    future: fetchCategoryName(categoryId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Text("Loading category...",
+                            style: TextStyle(fontSize: 14));
+                      }
+                      return Text("Category: ${snapshot.data}",
+                          style: const TextStyle(fontSize: 14));
+                    },
+                  ),
+
                   const SizedBox(height: 4),
                   Text("Rate: ₹$rate/hr",
                       style: const TextStyle(
@@ -144,9 +192,9 @@ class CarCard extends StatelessWidget {
                           fontSize: 14,
                           color: available ? Colors.blue : Colors.red)),
                   const SizedBox(height: 4),
-                  Text("Added by: $createdBy", style: const TextStyle(fontSize: 12)),
-                  Text("Created: $createdAt",
-                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  //Text("Added by: $createdBy", style: const TextStyle(fontSize: 12)),
+                 // Text("Created: $createdAt",
+                  //    style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),

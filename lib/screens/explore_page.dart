@@ -56,8 +56,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart'; // Just in case we need platform logs
-import 'category_cars_page.dart'; // Make sure this is your destination page
+import 'category_cars_page.dart'; // Make sure this path is correct
 
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key});
@@ -73,16 +72,16 @@ class ExplorePage extends StatelessWidget {
 
       return snapshot.docs.map((doc) {
         final data = doc.data();
-
-        // Logging for debugging
         debugPrint("✅ Category data: $data");
 
         return CategoryItem(
+          id: doc.id, // <-- add this line to include the Firestore document ID
           name: data['name'] ?? 'Unknown',
           icon: getIconFromString(data['icon'] ?? 'directions_car'),
-          color: Color(data['color'] ?? 0xFF9E9E9E), // grey fallback
+          color: Color(int.parse(data['color'].toString())),
         );
       }).toList();
+
     } catch (e) {
       debugPrint("❌ Error fetching categories: $e");
       return [];
@@ -133,7 +132,8 @@ class ExplorePage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => CategoryCarsPage(categoryName: categories[index].name),
+                  builder: (_) => CategoryCarsPage(categoryId: categories[index].id),
+
                 ),
               );
             },
@@ -145,11 +145,12 @@ class ExplorePage extends StatelessWidget {
 }
 
 class CategoryItem {
+  final String id; // <-- add this
   final String name;
   final IconData icon;
   final Color color;
 
-  CategoryItem({required this.name, required this.icon, required this.color});
+  CategoryItem({required this.id, required this.name, required this.icon, required this.color});
 }
 
 class CategoryCard extends StatelessWidget {
@@ -199,4 +200,3 @@ IconData getIconFromString(String iconName) {
       return Icons.directions_car;
   }
 }
-
