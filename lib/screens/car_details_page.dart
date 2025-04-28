@@ -88,11 +88,43 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CarDetailsPage extends StatelessWidget {
   final Map<String, dynamic> car;
 
   const CarDetailsPage({required this.car, super.key});
+
+ // import 'package:firebase_auth/firebase_auth.dart'; // Import this at the top if not already
+
+// Inside your CarDetailsPage class:
+  void addToWishlist(BuildContext context, String carId) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please log in to add to wishlist')),
+        );
+        return;
+      }
+
+      await FirebaseFirestore.instance.collection('wishlist').add({
+        'carID': carId,
+        'userID': user.uid,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Added to wishlist!')),
+      );
+    } catch (e) {
+      print('Error adding to wishlist: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to add to wishlist')),
+      );
+    }
+  }
+
 
   Future<String> getCategoryName(String categoryId) async {
     try {
@@ -142,9 +174,10 @@ class CarDetailsPage extends StatelessWidget {
                     onRentPressed: () {
                       // Implement Rent functionality
                     },
-                    onWishlistPressed: () {
-                      // Implement Wishlist functionality
-                    },
+                      onWishlistPressed: () {
+                        addToWishlist(context, car['id']); // Assuming your car map has an 'id' field
+                      },
+
                   );
                 },
               ),
