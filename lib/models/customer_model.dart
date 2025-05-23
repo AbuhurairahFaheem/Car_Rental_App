@@ -6,6 +6,8 @@ class Customer {
   final String email;
   final String phoneNumber;
   final String profileImageUrl;
+  final String password;
+
 
   Customer({
     required this.id,
@@ -13,6 +15,7 @@ class Customer {
     required this.email,
     required this.phoneNumber,
     required this.profileImageUrl,
+    required this.password,
   });
 
   factory Customer.fromMap(Map<String, dynamic> data, String docId) {
@@ -22,6 +25,7 @@ class Customer {
       email: data['email'] ?? '',
       phoneNumber: data['phoneNumber'] ?? '',
       profileImageUrl: data['profileImageUrl'] ?? '',
+      password:data['password'] ?? '',
     );
   }
 
@@ -31,6 +35,7 @@ class Customer {
       'email': email,
       'phoneNumber': phoneNumber,
       'profileImageUrl': profileImageUrl,
+      'password' : password,
     };
   }
 
