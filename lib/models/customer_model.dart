@@ -34,11 +34,7 @@ class Customer {
     };
   }
 
-  Future<void> save() async {
-    await FirebaseFirestore.instance.collection('customers').doc(id).set(toMap());
-  }
-
-  /// 🔄 Send chat message
+  /// 🔁 Send a chat message
   Future<void> sendMessage(String message, String sender) async {
     await FirebaseFirestore.instance
         .collection('customers')
@@ -46,22 +42,21 @@ class Customer {
         .collection('chats')
         .add({
       'message': message,
-      'sender': sender, // 'customer' or 'admin'
+      'sender': sender,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
 
-  /// 🔁 Get chat messages as a stream (chronological)
+  /// 🔄 Stream chat messages in order
   Stream<List<ChatMessage>> getChatMessages() {
     return FirebaseFirestore.instance
         .collection('customers')
         .doc(id)
         .collection('chats')
-        .orderBy('timestamp', descending: false)
+        .orderBy('timestamp')
         .snapshots()
-        .map((snapshot) => snapshot.docs
-        .map((doc) => ChatMessage.fromMap(doc.data()))
-        .toList());
+        .map((snapshot) =>
+        snapshot.docs.map((doc) => ChatMessage.fromMap(doc.data())).toList());
   }
 }
 
@@ -84,16 +79,3 @@ class ChatMessage {
     );
   }
 }
-
-// usage example
-// customers/
-//       customerId/
-//                  name: "Ali"
-//                  email: "ali@example.com"
-//                  phoneNumber: "+923001234567"
-//                   profileImageUrl: "https://example.com/image.jpg"
-//                    chats/  <-- subcollection
-//                              autoId1/
-//                                      message: "Hello"
-//                                      sender: "customer"
-//                                      timestamp: <Timestamp>
