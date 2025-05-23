@@ -90,15 +90,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 class CarDetailsPage extends StatelessWidget {
   final Map<String, dynamic> car;
 
   const CarDetailsPage({required this.car, super.key});
 
- // import 'package:firebase_auth/firebase_auth.dart'; // Import this at the top if not already
-
-// Inside your CarDetailsPage class:
-  void addToWishlist(BuildContext context, String carId) async {
+  void addToWishlist(BuildContext context, String carDocId) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
@@ -108,14 +109,25 @@ class CarDetailsPage extends StatelessWidget {
         return;
       }
 
-      await FirebaseFirestore.instance.collection('wishlist').add({
-        'carID': carId,
+      await FirebaseFirestore.instance.collection('wishlists').add({
+        'carID': carDocId,
         'userID': user.uid,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Added to wishlist!')),
+      // Show success dialog
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Success'),
+          content: const Text('Car has been added to your wishlist!'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
     } catch (e) {
       print('Error adding to wishlist: $e');
@@ -124,7 +136,6 @@ class CarDetailsPage extends StatelessWidget {
       );
     }
   }
-
 
   Future<String> getCategoryName(String categoryId) async {
     try {
@@ -174,10 +185,9 @@ class CarDetailsPage extends StatelessWidget {
                     onRentPressed: () {
                       // Implement Rent functionality
                     },
-                      onWishlistPressed: () {
-                        addToWishlist(context, car['id']); // Assuming your car map has an 'id' field
-                      },
-
+                    onWishlistPressed: () {
+                      addToWishlist(context, car['id']); // car['id'] must be document id
+                    },
                   );
                 },
               ),
@@ -188,6 +198,8 @@ class CarDetailsPage extends StatelessWidget {
     );
   }
 }
+
+// ... CarImage, CarDetailsInfo, and PrimaryButton classes remain unchanged ...
 
 
 class CarImage extends StatelessWidget {

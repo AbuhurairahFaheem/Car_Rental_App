@@ -50,7 +50,7 @@ packages:
     source: hosted
     version: "1.1.2"
   cloud_firestore:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: cloud_firestore
       sha256: a0f161b92610e078b4962d7e6ebeb66dc9cce0ada3514aeee442f68165d78185
@@ -82,7 +82,7 @@ packages:
     source: hosted
     version: "1.19.1"
   crypto:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: crypto
       sha256: "1e445881f28f22d6140f181e07737b22f1e099a5e1ff94b0af2f9e4a463f4855"
@@ -122,7 +122,7 @@ packages:
     source: hosted
     version: "7.0.1"
   firebase_auth:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: firebase_auth
       sha256: "279b2773ff61afd9763202cb5582e2b995ee57419d826b9af6517302a59b672f"
@@ -146,7 +146,7 @@ packages:
     source: hosted
     version: "5.8.13"
   firebase_core:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: firebase_core
       sha256: "26de145bb9688a90962faec6f838247377b0b0d32cc0abecd9a4e43525fc856c"
@@ -170,7 +170,7 @@ packages:
     source: hosted
     version: "2.22.0"
   firebase_database:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: firebase_database
       sha256: "3b9ca306d26ad243ccbc4c717ff6e8563a080ebe11ee77fa7349b419c894b42d"
@@ -337,7 +337,7 @@ packages:
     source: hosted
     version: "2.1.8"
   shared_preferences:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: shared_preferences
       sha256: "6e8bf70b7fef813df4e9a36f658ac46d107db4b4cfe1048b477d4e453a8159f5"

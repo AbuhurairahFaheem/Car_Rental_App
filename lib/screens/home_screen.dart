@@ -345,6 +345,24 @@ import 'profile_page.dart';
 import 'explore_page.dart';
 import 'category_cars_page.dart';
 import '../models/user_models.dart';
+import '../models/car_model.dart'; // Import your model
+
+Future<List<Car>> fetchCarRecommendations() async {
+  try {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('cars')
+        .where('recommendation', isEqualTo: true)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => Car.fromMap(doc.id, doc.data()))
+        .toList();
+  } catch (e) {
+    print("Error fetching car recommendations: $e");
+    return [];
+  }
+}
+
 
 class HomeScreen extends StatefulWidget {
   final UserModel user;
