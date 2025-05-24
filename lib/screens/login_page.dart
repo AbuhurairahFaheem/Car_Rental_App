@@ -103,8 +103,8 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'signup_page.dart';
-import '../models/user_models.dart';
-import '../Utils/hash_password.dart';
+import '../models/customer_model.dart'; // Updated import
+import '../utils/hash_password.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -125,16 +125,12 @@ class _LoginScreenState extends State<LoginScreen> {
       final password = _formData.passwordController.text.trim();
 
       try {
-        // Query Firestore for user with matching email
-        final querySnapshot =
-            await FirebaseFirestore.instance
-                .collection('users')
-                .where('email', isEqualTo: email)
-                .where(
-                  'password',
-                  isEqualTo: hashPassword(password),
-                ) // 👉 You should hash this
-                .get();
+        // Query Firestore for customer with matching email
+        final querySnapshot = await FirebaseFirestore.instance
+            .collection('customers') // Changed collection name
+            .where('email', isEqualTo: email)
+            .where('password', isEqualTo: hashPassword(password))
+            .get();
 
         if (querySnapshot.docs.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -143,26 +139,17 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
 
-        // Retrieve user data
+        // Retrieve customer data
         final doc = querySnapshot.docs.first;
-        final data = doc.data();
-        final uid = doc.id;
-
-        final user = UserModel(
-          uid: uid,
-          fullName: data['fullName'] ?? '',
-          contact: data['contact'] ?? '',
-          email: data['email'] ?? '',
-          password: data['password'] ?? '', // Ensure password is passed
-        );
+        final customer = Customer.fromMap(doc.data(), doc.id);
 
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user_uid', uid); // or user.email
+        await prefs.setString('customer_id', customer.id);
 
-        // Navigate to home screen
+        // Navigate to home screen with customer data
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
+          MaterialPageRoute(builder: (_) => HomeScreen(customer: customer)),
         );
       } catch (e) {
         print('Login error: $e');
@@ -198,6 +185,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+// Rest of the LoginFormData, LoginForm, and CustomTextField classes remain the same
 
 class LoginFormData {
   final TextEditingController emailController = TextEditingController();

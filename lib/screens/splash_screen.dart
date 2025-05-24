@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_screen.dart';
 import 'login_page.dart';
-import '../models/user_models.dart';
+import '../models/customer_model.dart'; // Updated import
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,30 +20,23 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigate() async {
-    await Future.delayed(const Duration(seconds: 2)); // Show splash briefly
+    await Future.delayed(const Duration(seconds: 2));
     final prefs = await SharedPreferences.getInstance();
-    final savedUid = prefs.getString('user_uid');
+    final savedCustomerId = prefs.getString('customer_id'); // Updated key
 
-    if (savedUid != null) {
-      final doc =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(savedUid)
-              .get();
+    if (savedCustomerId != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('customers') // Changed collection name
+          .doc(savedCustomerId)
+          .get();
 
       if (doc.exists) {
-        final data = doc.data()!;
-        final user = UserModel(
-          uid: savedUid,
-          fullName: data['fullName'] ?? '',
-          contact: data['contact'] ?? '',
-          email: data['email'] ?? '',
-          password: data['password'] ?? '', // Add password here too
-        );
+        final customer = Customer.fromMap(doc.data()!, doc.id);
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
+          MaterialPageRoute(
+              builder: (_) => HomeScreen(customer: customer)),
         );
         return;
       }
@@ -58,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // match your app style
+      backgroundColor: Colors.white,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

@@ -39,6 +39,8 @@ class Customer {
     };
   }
 
+
+
   /// 🔁 Send a chat message
   Future<void> sendMessage(String message, String sender) async {
     await FirebaseFirestore.instance
@@ -61,26 +63,39 @@ class Customer {
         .orderBy('timestamp')
         .snapshots()
         .map((snapshot) =>
-        snapshot.docs.map((doc) => ChatMessage.fromMap(doc.data())).toList());
+        snapshot.docs.map((doc) => ChatMessage.fromMap(doc.data(),doc.id)).toList());
   }
+
 }
 
 class ChatMessage {
+  final String id;
   final String message;
   final String sender;
+  final String senderName;
   final DateTime timestamp;
+  final String? carId;
+  final bool isSystem;
 
   ChatMessage({
+    required this.id,
     required this.message,
     required this.sender,
+    required this.senderName,
     required this.timestamp,
+    this.carId,
+    this.isSystem = false,
   });
 
-  factory ChatMessage.fromMap(Map<String, dynamic> data) {
+  factory ChatMessage.fromMap(Map<String, dynamic> data, String id) {
     return ChatMessage(
+      id: id,
       message: data['message'] ?? '',
       sender: data['sender'] ?? '',
-      timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      senderName: data['senderName'] ?? 'Unknown',
+      timestamp: (data['timestamp'] as Timestamp).toDate(),
+      carId: data['carId'],
+      isSystem: data['isSystem'] ?? false,
     );
   }
 }

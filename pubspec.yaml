@@ -40,10 +40,12 @@ dependencies:
   cloud_firestore: ^4.15.5
   crypto: ^3.0.3
   shared_preferences: ^2.2.2
+  cached_network_image: ^3.3.1  # ✅ Moved here
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
 
 
 
