@@ -16,14 +16,25 @@ class NotificationItem {
   });
 
   factory NotificationItem.fromMap(String id, Map<String, dynamic> data) {
+    DateTime getTimestamp() {
+      if (data['timestamp'] is Timestamp) {
+        return (data['timestamp'] as Timestamp).toDate();
+      } else if (data['timestamp'] is String) {
+        return DateTime.tryParse(data['timestamp']) ?? DateTime.now();
+      } else {
+        return DateTime.now();
+      }
+    }
+
     return NotificationItem(
       id: id,
       title: data['title'] ?? '',
-      body: data['body'] ?? '',
-      timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      body: data['body'] ?? data['message'] ?? '',
+      timestamp: getTimestamp(),
       isRead: data['isRead'] ?? false,
     );
   }
+
 }
 
 class NotificationService {
