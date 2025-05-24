@@ -7,6 +7,11 @@ import '../services/car_services.dart';
 import 'category_cars_page.dart';
 import 'car_details_page.dart';
 import 'searchpage.dart';
+import 'home_screen.dart';
+import 'rented_page.dart';
+import 'wishlist_page.dart';
+import 'profile_page.dart';
+import 'searchpage.dart';
 
 import 'package:flutter/material.dart';
 import '../models/car_model.dart';
@@ -24,6 +29,7 @@ class ExplorePage extends StatefulWidget {
 }
 
 class _ExplorePageState extends State<ExplorePage> {
+
   late Future<List<Car>> _recommendedCarsFuture;
   late Future<List<Car>> _recentlyAddedCarsFuture;
   final List<Map<String, dynamic>> _categories = [
@@ -83,6 +89,7 @@ class _ExplorePageState extends State<ExplorePage> {
   ),
   ),
   ),
+    //bottomNavigationBar: _buildBottomNavigationBar(context),
   );
   }
 
@@ -108,6 +115,65 @@ class _ExplorePageState extends State<ExplorePage> {
   ],
   );
   }
+
+  // Widget _buildBottomNavigationBar(BuildContext context) {
+  //   return BottomNavigationBar(
+  //     currentIndex: 2, // Home is selected
+  //     type: BottomNavigationBarType.fixed,
+  //     selectedItemColor: Colors.blueAccent,
+  //     unselectedItemColor: Colors.grey,
+  //     onTap: (index) => _onItemTapped(context, index),
+  //     items: const [
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.explore),
+  //         label: "Explore",
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.check_box),
+  //         label: "Rented",
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.home),
+  //         label: "Home",
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.favorite),
+  //         label: "Wishlist",
+  //       ),
+  //       BottomNavigationBarItem(
+  //         icon: Icon(Icons.person),
+  //         label: "Profile",
+  //       ),
+  //     ],
+  //   );
+  // }
+  //
+  // void _onItemTapped(BuildContext context, int index) {
+  //   if (index == 2) return; // Already on home
+  //
+  //   Navigator.pushReplacement(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => _getPageForIndex(index),
+  //     ),
+  //   );
+  // }
+  //
+  // Widget _getPageForIndex(int index) {
+  //   switch (index) {
+  //     case 0:
+  //       return ExplorePage(customer: widget.customer);
+  //     case 1:
+  //       return RentedPage(customer: widget.customer);
+  //     case 3:
+  //       return WishlistPage(customer: widget.customer);
+  //     case 4:
+  //       return ProfilePage(customer: widget.customer);
+  //     default:
+  //       return HomeScreen(customer: widget.customer);
+  //   }
+  // }
+
 
   Widget _buildCategoryItem(Map<String, dynamic> category) {
   return GestureDetector(

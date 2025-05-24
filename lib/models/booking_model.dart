@@ -36,7 +36,7 @@ BookingStatus bookingStatusFromString(String status) {
       return BookingStatus.pending;
     case 'confirmed':
       return BookingStatus.confirmed;
-    case 'ongoing':
+    case 'active':
       return BookingStatus.ongoing;
     case 'completed':
       return BookingStatus.completed;

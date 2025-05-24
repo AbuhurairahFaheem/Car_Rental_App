@@ -45,7 +45,7 @@ class CarDetailsPage extends StatelessWidget {
         'customerId': customer.id,
         'startDate': DateTime.now(),
         'endDate': DateTime.now().add(const Duration(days: 1)),
-        'totalPrice': double.parse(car.ratePerDay),
+        'totalPrice': car.ratePerDay,
         'status': 'upcoming',
         'createdAt': FieldValue.serverTimestamp(),
       });

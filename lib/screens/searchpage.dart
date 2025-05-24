@@ -91,7 +91,8 @@ class _SearchPageState extends State<SearchPage> {
                               ? Image.network(car.imageURL, width: 60, height: 60)
                               : const Icon(Icons.directions_car, size: 40),
                           title: Text(car.title),
-                          subtitle: Text('${car.type} • \$${car.ratePerDay}/day'),
+                          subtitle: Text('${car.type} • \$${car.ratePerDay?.toStringAsFixed(2) ?? '0.00'}/day'),
+
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(

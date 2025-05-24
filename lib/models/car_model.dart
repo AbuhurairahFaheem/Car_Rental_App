@@ -5,7 +5,7 @@ class Car {
   final String title;
   final String type;
   final String imageURL;
-  final String ratePerDay;
+  final double ratePerDay;
   final bool isRecommended;
   final bool isAvailable;
 

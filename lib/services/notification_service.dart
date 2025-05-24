@@ -46,11 +46,13 @@ class NotificationService {
   static Stream<List<NotificationItem>> getCustomerNotifications(String customerId) {
     return _notificationsRef
         .where('customerId', isEqualTo: customerId)
+        .where('timestamp', isGreaterThan: Timestamp.fromMillisecondsSinceEpoch(0)) // ✅ ensures timestamp exists
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) =>
         snapshot.docs.map((doc) => NotificationItem.fromMap(doc.id, doc.data())).toList());
   }
+
 
   static Future<void> markAsRead(String notificationId) async {
     await _notificationsRef.doc(notificationId).update({'isRead': true});
