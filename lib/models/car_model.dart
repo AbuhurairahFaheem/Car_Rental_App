@@ -25,7 +25,11 @@ class Car {
       title: data['title'] ?? '',
       type: data['type'] ?? '',
       imageURL: data['imageURL'] ?? '',
-      ratePerDay: data['ratePerDay'] ?? '',
+      ratePerDay:
+          (data['ratePerDay'] is num)
+              ? (data['ratePerDay'] as num).toDouble()
+              : 0.0,
+
       isRecommended: data['recommendation'] ?? false,
       isAvailable: data['isAvailable'] ?? false,
     );
@@ -49,7 +53,3 @@ class Car {
     await FirebaseFirestore.instance.collection('cars').doc(id).delete();
   }
 }
-
-
-
-
